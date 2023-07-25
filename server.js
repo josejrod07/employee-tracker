@@ -103,3 +103,194 @@ const mainMenu = () => {
         }
     });
 };
+
+const viewDepartments = () => {
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        mainMenu();
+    });
+};
+
+const viewRoles = () => {
+    connection.query('SELECT * FROM role', (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        mainMenu();
+    });
+};
+
+const viewEmployees = () => {
+    connection.query('SELECT * FROM employee', (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        mainMenu();
+    });
+};
+
+const addDepartment = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newDepartment',
+            message: 'What is the name of the new department?'
+        }
+    ]).then((answer) => {
+        connection.query('INSERT INTO department SET ?', { name: answer.newDepartment }, (err, res) => {
+            if (err) throw err;
+            console.log('Department added!');
+            mainMenu();
+        });
+    });
+};
+
+const removeDepartment = () => {
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'removeDepartment',
+                message: 'Which department would you like to remove?',
+                choices: res.map(department => department.name)
+            }
+        ]).then((answer) => {
+            connection.query('DELETE FROM department WHERE ?', { name: answer.removeDepartment }, (err, res) => {
+                if (err) throw err;
+                console.log('Department removed!');
+                mainMenu();
+            });
+        });
+    });
+};
+
+const addRole = () => {
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'newRole',
+                message: 'What is the name of the new role?'
+            },
+            {
+                type: 'input',
+                name: 'newSalary',
+                message: 'What is the salary of the new role?'
+            },
+            {
+                type: 'list',
+                name: 'newDepartment',
+                message: 'What department does the new role belong to?',
+                choices: res.map(department => department.name)
+            }
+        ]).then((answer) => {
+            connection.query('INSERT INTO role SET ?', { title: answer.newRole, salary: answer.newSalary, department_id: answer.newDepartment }, (err, res) => {
+                if (err) throw err;
+                console.log('Role added!');
+                mainMenu();
+            });
+        });
+    });
+};
+
+const removeRole = () => {
+    connection.query('SELECT * FROM role', (err, res) => {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'removeRole',
+                message: 'Which role would you like to remove?',
+                choices: res.map(role => role.title)
+            }
+        ]).then((answer) => {
+            connection.query('DELETE FROM role WHERE ?', { title: answer.removeRole }, (err, res) => {
+                if (err) throw err;
+                console.log('Role removed!');
+                mainMenu();
+            });
+        });
+    });
+};
+
+const addEmployee = () => {
+    connection.query('SELECT * FROM role', (err, res) => {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'newEmployeeFirstName',
+                message: 'What is the first name of the new employee?'
+            },
+            {
+                type: 'input',
+                name: 'newEmployeeLastName',
+                message: 'What is the last name of the new employee?'
+            },
+            {
+                type: 'list',
+                name: 'newEmployeeRole',
+                message: 'What is the role of the new employee?',
+                choices: res.map(role => role.title)
+            },
+            {
+                type: 'list',
+                name: 'newEmployeeManager',
+                message: 'Who is the manager of the new employee?',
+                choices: res.map(employee => employee.first_name + ' ' + employee.last_name)
+            }
+        ]);
+    }).then((answer) => {
+        connection.query('INSERT INTO employee SET ?', { first_name: answer.newEmployeeFirstName, last_name: answer.newEmployeeLastName, role_id: answer.newEmployeeRole }, (err, res) => {
+            if (err) throw err;
+            console.log('Employee added!');
+            mainMenu();
+        });
+    });
+};
+
+const removeEmployee = () => {
+    connection.query('SELECT * FROM employee', (err, res) => {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'removeEmployee',
+                message: 'Which employee would you like to remove?',
+                choices: res.map(employee => employee.first_name + ' ' + employee.last_name)
+            }
+        ]).then((answer) => {
+            connection.query('DELETE FROM employee WHERE ?', { first_name: answer.removeEmployee }, (err, res) => {
+                if (err) throw err;
+                console.log('Employee removed!');
+                mainMenu();
+            });
+        });
+    });
+};
+
+const updateEmployeeRole = () => {
+    connection.query('SELECT * FROM employee', (err, res) => {
+        console.table(res);
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'updateEmployee',
+                message: 'Enter the id of the employee you would like to update: ',
+            },
+            {
+                type: 'input',
+                name: 'updateRole',
+                message: 'Enter the id of the new role: ',
+            },
+        ]).then((answer) => {
+            connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [answer.updateRole, answer.updateEmployee], (err, res) => {
+            if (err) throw err;
+            console.log('Employee role updated!');
+            mainMenu();
+            });
+        });
+    });
+};
